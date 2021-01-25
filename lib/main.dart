@@ -1,0 +1,231 @@
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:speech_recognition/speech_recognition.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        // This is the theme of your application.
+        //
+        // Try running your application with "flutter run". You'll see the
+        // application has a blue toolbar. Then, without quitting the app, try
+        // changing the primarySwatch below to Colors.green and then invoke
+        // "hot reload" (press "r" in the console where you ran "flutter run",
+        // or simply save your changes to "hot reload" in a Flutter IDE).
+        // Notice that the counter didn't reset back to zero; the application
+        // is not restarted.
+        primarySwatch: Colors.blue,
+        // This makes the visual density adapt to the platform that you run
+        // the app on. For desktop platforms, the controls will be smaller and
+        // closer together (more dense) than on mobile platforms.
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: MyHomePage(title: 'Flutter Demo Home Page'),
+    );
+  }
+}
+
+const languages = const [
+  const Language('Francais', 'fr_FR'),
+  const Language('English', 'en_US'),
+  const Language('Pусский', 'ru_RU'),
+  const Language('Italiano', 'it_IT'),
+  const Language('Español', 'es_ES'),
+];
+
+class Language {
+  final String name;
+  final String code;
+
+  const Language(this.name, this.code);
+}
+class MyHomePage extends StatefulWidget {
+  MyHomePage({Key key, this.title}) : super(key: key);
+
+  // This widget is the home page of your application. It is stateful, meaning
+  // that it has a State object (defined below) that contains fields that affect
+  // how it looks.
+
+  // This class is the configuration for the state. It holds the values (in this
+  // case the title) provided by the parent (in this case the App widget) and
+  // used by the build method of the State. Fields in a Widget subclass are
+  // always marked "final".
+
+  final String title;
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  SpeechRecognition _speech;
+
+  bool _speechRecognitionAvailable = false;
+  bool _isListening = false;
+
+  String transcription = '';
+
+  //String _currentLocale = 'en_US';
+  Language selectedLang = languages.first;
+  int _counter = 0;
+
+  @override
+  initState() {
+    super.initState();
+    activateSpeechRecognizer();
+  }
+  // Platform messages are asynchronous, so we initialize in an async method.
+  void activateSpeechRecognizer() {
+    print('_MyAppState.activateSpeechRecognizer... ');
+    _speech = new SpeechRecognition();
+    _speech.setAvailabilityHandler(onSpeechAvailability);
+    _speech.setCurrentLocaleHandler(onCurrentLocale);
+    _speech.setRecognitionStartedHandler(onRecognitionStarted);
+    _speech.setRecognitionResultHandler(onRecognitionResult);
+    _speech.setRecognitionCompleteHandler(onRecognitionComplete);
+    _speech
+        .activate()
+        .then((res) => setState(() => _speechRecognitionAvailable = res));
+  }
+
+  void _incrementCounter() {
+    setState(() {
+      // This call to setState tells the Flutter framework that something has
+      // changed in this State, which causes it to rerun the build method below
+      // so that the display can reflect the updated values. If we changed
+      // _counter without calling setState(), then the build method would not be
+      // called again, and so nothing would appear to happen.
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // This method is rerun every time setState is called, for instance as done
+    // by the _incrementCounter method above.
+    //
+    // The Flutter framework has been optimized to make rerunning build methods
+    // fast, so that you can just rebuild anything that needs updating rather
+    // than having to individually change instances of widgets.
+    return Scaffold(
+      appBar: new AppBar(
+        title: new Text('SpeechRecognition'),
+        actions: [
+          new PopupMenuButton<Language>(
+            onSelected: _selectLangHandler,
+            itemBuilder: (BuildContext context) => _buildLanguagesWidgets,
+          )
+        ],
+      ),
+      body: new Padding(
+          padding: new EdgeInsets.all(8.0),
+          child: new Center(
+            child: new Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                new Expanded(
+                    child: new Container(
+                        padding: const EdgeInsets.all(8.0),
+                        color: Colors.grey.shade200,
+                        child: new Text(transcription))),
+                _buildButton(
+                  onPressed: _speechRecognitionAvailable && !_isListening
+                      ? () => start()
+                      : null,
+                  label: _isListening
+                      ? 'Listening...'
+                      : 'Listen (${selectedLang.code})',
+                ),
+                _buildButton(
+                  onPressed: _isListening ? () => cancel() : null,
+                  label: 'Cancel',
+                ),
+                _buildButton(
+                  onPressed: _isListening ? () => stop() : null,
+                  label: 'Stop',
+                ),
+              ],
+            ),
+          )), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+  List<CheckedPopupMenuItem<Language>> get _buildLanguagesWidgets => languages
+      .map((l) => new CheckedPopupMenuItem<Language>(
+    value: l,
+    checked: selectedLang == l,
+    child: new Text(l.name),
+  ))
+      .toList();
+
+  void _selectLangHandler(Language lang) {
+    setState(() => selectedLang = lang);
+  }
+
+  Widget _buildButton({String label, VoidCallback onPressed}) => new Padding(
+      padding: new EdgeInsets.all(12.0),
+      child: new RaisedButton(
+        color: Colors.cyan.shade600,
+        onPressed: onPressed,
+        child: new Text(
+          label,
+          style: const TextStyle(color: Colors.white),
+        ),
+      ));
+
+  void start() => _speech
+      .listen(locale: selectedLang.code)
+      .then((result) =>{
+    print('_MyAppState.start => result ${result}')
+  });
+
+  void cancel() =>
+      _speech.cancel().then((result) => setState(() => _isListening = result));
+
+  void stop() =>
+      _speech.stop().then((result) => setState(() => _isListening = result));
+
+  void onSpeechAvailability(bool result) =>
+      setState(() => _speechRecognitionAvailable = result);
+
+  void onCurrentLocale(String locale) {
+    print('_MyAppState.onCurrentLocale... $locale');
+    setState(
+            () => selectedLang = languages.firstWhere((l) => l.code == locale));
+  }
+
+  void onRecognitionStarted() => setState(() => _isListening = true);
+
+  void onRecognitionResult(String text) {
+    setState(() => transcription = text);
+    if(transcription.toString().contains("encender")){
+   //   print("Reconociendo..."+transcription);
+      Fluttertoast.showToast(msg: "Encendiendo Luces",
+          toastLength: Toast.LENGTH_SHORT,gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.green,
+          textColor: Colors.black,
+          fontSize: 16);
+    }
+    else if(transcription.toString().contains("apagar")){
+      Fluttertoast.showToast(msg: "Apagando Luces",
+          toastLength: Toast.LENGTH_SHORT,gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.green,
+          textColor: Colors.black,
+          fontSize: 16);
+    }
+
+  }
+
+  void onRecognitionComplete() => setState(() => _isListening = false);
+}
