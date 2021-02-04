@@ -117,6 +117,37 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+           DrawerHeader(
+            child: Text("Control por Voz"),
+             decoration: BoxDecoration(
+               color: Colors.blue
+             ),
+        ),
+            ListTile(
+              title: Text("Mi perfil"),
+              onTap: (){
+
+              },
+            ),
+            ListTile(
+              title: Text("Configuraciones"),
+              onTap: (){
+
+              },
+            ),
+            ListTile(
+              title: Text("Lista de acciones"),
+              onTap: (){
+
+              },
+            )
+          ],
+        ),
+      ),
       appBar: new AppBar(
         title: new Text('SpeechRecognition'),
         actions: [
@@ -208,7 +239,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void onRecognitionResult(String text) {
     setState(() => transcription = text);
     if(transcription.toString().contains("encender")){
-   //   print("Reconociendo..."+transcription);
+      //   print("Reconociendo..."+transcription);
       Fluttertoast.showToast(msg: "Encendiendo Luces",
           toastLength: Toast.LENGTH_SHORT,gravity: ToastGravity.CENTER,
           timeInSecForIosWeb: 1,
