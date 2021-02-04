@@ -1,3 +1,4 @@
+import 'package:controlVoiceApp/sensors.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:speech_recognition/speech_recognition.dart';
@@ -148,7 +149,8 @@ class _MyHomePageState extends State<MyHomePage> {
               trailing: Icon(Icons.gradient),
               title: Text("Sensores"),
               onTap: (){
-
+                Navigator.push(context,
+                    MaterialPageRoute<void>(builder: (_) => Sensors()));
               },
             ),
             ListTile(
