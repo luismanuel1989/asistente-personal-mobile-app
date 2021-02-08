@@ -1,3 +1,4 @@
+import 'package:controlVoiceApp/home.dart';
 import 'package:controlVoiceApp/main.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtil.init(context,designSize: Size(375,812),allowFontScaling: false);
     TextEditingController _emailController = TextEditingController();
     TextEditingController _passwordController = TextEditingController();
     final minHeight =
@@ -131,20 +133,20 @@ class _LoginState extends State<Login> {
                       //width of the parent widget
                       width: double.infinity,
                       child:  FlatButton(
-                        color: Color.fromRGBO(244, 157, 63, 1),
+                        color: Color.fromRGBO(244, 200, 63, 1),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(100.0),
                             side: BorderSide(color: Color.fromRGBO(244, 157, 63, 1))
                         ),
-                        /*
+
                         onPressed: (){
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => WelcomePage()));
+                                  builder: (context) => MyHomePage()));
                         },
 
-                         */
+
                         child: Text("Login",style: TextStyle(fontSize: 18,fontFamily: "Lato",fontWeight: FontWeight.normal,color: Colors.white)),
 
                       )
