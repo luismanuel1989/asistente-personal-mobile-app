@@ -4,6 +4,8 @@ import 'package:controlVoiceApp/main.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'home.dart';
+
 class Sensors extends StatefulWidget {
   @override
   _SensorsState createState() => _SensorsState();
