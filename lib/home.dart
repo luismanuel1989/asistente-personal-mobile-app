@@ -1,4 +1,5 @@
 import 'package:controlVoiceApp/sensors.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:speech_recognition/speech_recognition.dart';
@@ -41,7 +42,7 @@ class Language {
 
 class _MyHomePageState extends State<MyHomePage> {
   SpeechRecognition _speech;
-
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   bool _speechRecognitionAvailable = false;
   bool _isListening = false;
 
@@ -55,6 +56,30 @@ class _MyHomePageState extends State<MyHomePage> {
   initState() {
     super.initState();
     activateSpeechRecognizer();
+    configurePushNotification();
+  }
+  configurePushNotification() {
+
+    _firebaseMessaging.getToken().then((token) async {
+      print("Token Forebase"+token);
+      /*
+    final http.Response response =
+    await http.post(UrlAddress.urlDeveloper + "/updateFCMToken",
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          "firebaseId": currentUser.id,
+          "fcmToken": token,
+        }));
+
+    if(response.statusCode == 200){
+      print("Token Updated");
+    }else{
+      print("Token not Updated");
+    }
+     */
+    });
   }
   // Platform messages are asynchronous, so we initialize in an async method.
   void activateSpeechRecognizer() {
