@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "452128210207-254n84an82s91e2k7topp3ck55kkuq8f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.controlVoiceApp",
+            "certificate_hash": "945811b0197f3da03445a0a64f7867045fa7181f"
+          }
+        },
+        {
           "client_id": "452128210207-tciuf74bhqnp55ivs1514it1043dqt8m.apps.googleusercontent.com",
           "client_type": 3
         }

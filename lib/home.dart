@@ -5,7 +5,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:speech_recognition/speech_recognition.dart';
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  String fullName;
+  MyHomePage({Key key, this.title,this.fullName}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -120,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              child: Text("Control por Voz"),
+              child: Text(widget.fullName,style: TextStyle(color: Colors.white,fontSize: 18)),
               decoration: BoxDecoration(
                   color: Colors.blue
               ),

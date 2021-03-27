@@ -3,6 +3,8 @@ import 'package:controlVoiceApp/main.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/screenutil.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -11,6 +13,26 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
 
+  GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: [
+      'email',
+      'https://www.googleapis.com/auth/contacts.readonly',
+    ],
+  );
+  Future<void> _handleSignIn() async {
+    try {
+     var sign = await _googleSignIn.signIn();
+
+     Navigator.push(
+         context,
+         MaterialPageRoute(
+             builder: (context) => MyHomePage(fullName: sign.displayName)));
+
+     print("Name "+sign.displayName);
+    } catch (error) {
+      print(error);
+    }
+  }
   @override
   void initState() {
     super.initState();
@@ -140,17 +162,31 @@ class _LoginState extends State<Login> {
                         ),
 
                         onPressed: (){
+
+
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => MyHomePage()));
+                                  builder: (context) => MyHomePage(fullName: "Normal User",)));
+
+
                         },
 
 
                         child: Text("Login",style: TextStyle(fontSize: 18,fontFamily: "Lato",fontWeight: FontWeight.normal,color: Colors.white)),
 
-                      )
+                      ),
+
                   ),
+
+                ),
+                // with custom text
+                SignInButton(
+                  Buttons.Google,
+                  text: "Sign up with Google",
+                  onPressed: () {
+                    _handleSignIn();
+                  },
                 ),
                 Container(
                   margin: EdgeInsets.only(left: ScreenUtil().setWidth(16),right: ScreenUtil().setWidth(16),top: 0),
