@@ -1,4 +1,5 @@
 import 'package:controlVoiceApp/sensors.dart';
+import 'package:controlVoiceApp/settings.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -162,7 +163,8 @@ class _MyHomePageState extends State<MyHomePage> {
               trailing: Icon(Icons.settings),
               title: Text("Configuraciones"),
               onTap: (){
-
+                Navigator.push(context,
+                    MaterialPageRoute<void>(builder: (_) => Settings()));
               },
             ),
             ListTile(
