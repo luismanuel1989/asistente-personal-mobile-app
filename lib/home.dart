@@ -2,8 +2,10 @@ import 'package:controlVoiceApp/sensors.dart';
 import 'package:controlVoiceApp/settings.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:speech_recognition/speech_recognition.dart';
+import 'package:web_scraper/web_scraper.dart';
 
 class MyHomePage extends StatefulWidget {
   String fullName;
@@ -25,6 +27,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 
+dynamic languagesSpk;
 
 const languages = const [
   const Language('Francais', 'fr_FR'),
@@ -41,24 +44,128 @@ class Language {
   const Language(this.name, this.code);
 }
 
-
+enum TtsState { playing, stopped }
 class _MyHomePageState extends State<MyHomePage> {
+  bool isComand = false;
+  int currentNew = 0;
+  var news = <String>[];
+  String _newVoiceText;
+  TtsState ttsState = TtsState.stopped;
+  String language;
+  FlutterTts flutterTts = FlutterTts();
   SpeechRecognition _speech;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   bool _speechRecognitionAvailable = false;
   bool _isListening = false;
-
+  double volume = 0.5;
+  double pitch = 1;
+  double rate = 1.3;
   String transcription = '';
 
   //String _currentLocale = 'en_US';
   Language selectedLang = languages.first;
   int _counter = 0;
 
+  void initChaptersTitleScrap() async {
+    final rawUrl =
+        'http://www.cubadebate.cu/noticias/';
+    final webScraper = WebScraper('http://www.cubadebate.cu');
+    final endpoint = rawUrl.replaceAll(r'http://www.cubadebate.cu', '');
+    if (await webScraper.loadWebPage(endpoint)) {
+      final titleNormalImageElements = webScraper.getElement(
+          'div#archive > div.image_post > div.title > a',
+          []);
+      final titleBigImageElements = webScraper.getElement(
+          'div#archive > div.bigimage_post > div.title > a',
+          []);
+
+      titleNormalImageElements.forEach((element) {
+        final title = element['title'];
+        news.add('$title');
+      });
+      titleBigImageElements.forEach((element) {
+        final title = element['title'];
+        news.add('$title');
+      });
+
+      // await _speak(news[currentNew]);
+      currentNew++;
+
+      print(news.length);
+      if (mounted)
+        setState(() {
+          //  this.titleList = titleList;
+        });
+    } else {
+      print('Cannot load url');
+    }
+  }
+
   @override
   initState() {
+    news = [];
     super.initState();
     activateSpeechRecognizer();
     configurePushNotification();
+    initTTS();
+    initChaptersTitleScrap();
+    _speak("Hola Martin Bienvenido,soy lisa, que quieres que haga?");
+
+  }
+  Future<void> initTTS() async {
+
+    flutterTts = FlutterTts();
+    flutterTts.setStartHandler(() {
+      setState(() {
+        print("playing");
+        ttsState = TtsState.playing;
+      });
+    });
+    flutterTts.setCompletionHandler(() {
+      setState(() {
+        print("Complete");
+        if(currentNew < news.length && isComand==true) {
+          _speak(news[currentNew]);
+          currentNew++;
+        }
+        ttsState = TtsState.stopped;
+      });
+    });
+    flutterTts.setErrorHandler((msg) {
+      setState(() {
+        print("error: $msg");
+        ttsState = TtsState.stopped;
+      });
+    });
+
+    //await _speak("Hola Martin este es tu asistente personal");
+
+  }
+  Future _getLanguages() async {
+    languagesSpk = await flutterTts.getLanguages;
+    print("pritty print ${languages}");
+    if (languages != null) setState(() => languages);
+  }
+  Future _speak(String txtStr) async {
+    await flutterTts.setVolume(volume);
+    await flutterTts.setSpeechRate(rate);
+    await flutterTts.setPitch(pitch);
+    _newVoiceText = txtStr;
+    if (_newVoiceText != null) {
+      if (_newVoiceText.isNotEmpty) {
+        var result = await flutterTts.speak(_newVoiceText);
+        if (result == 1) setState(() => ttsState = TtsState.playing);
+      }
+    }
+  }
+  Future _stop() async {
+    var result = await flutterTts.stop();
+    if (result == 1) setState(() => ttsState = TtsState.stopped);
+  }
+  @override
+  void dispose() {
+    super.dispose();
+    flutterTts.stop();
   }
   configurePushNotification() {
 
@@ -83,7 +190,7 @@ class _MyHomePageState extends State<MyHomePage> {
      */
     });
   }
-  // Platform messages are asynchronous, so we initialize in an async method.
+// Platform messages are asynchronous, so we initialize in an async method.
   void activateSpeechRecognizer() {
     print('_MyAppState.activateSpeechRecognizer... ');
     _speech = new SpeechRecognition();
@@ -267,6 +374,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void onRecognitionStarted() => setState(() => _isListening = true);
 
   void onRecognitionResult(String text) {
+
     setState(() => transcription = text);
     if(transcription.toString().contains("encender")){
       //   print("Reconociendo..."+transcription);
@@ -276,6 +384,16 @@ class _MyHomePageState extends State<MyHomePage> {
           backgroundColor: Colors.green,
           textColor: Colors.black,
           fontSize: 16);
+    }
+    if(transcription.toString().contains("noticias") && transcription.toString().contains("Lisa")){
+      _speech.stop();
+      isComand = true;
+      _speak(news[currentNew]);
+      currentNew++;
+    }
+    else if(transcription.toString().contains("temperatura") && transcription.toString().contains("Lisa")){
+      _speech.stop();
+      _speak("La temperatura es de 31 grados celcius");
     }
     else if(transcription.toString().contains("apagar")){
       Fluttertoast.showToast(msg: "Apagando Luces",
